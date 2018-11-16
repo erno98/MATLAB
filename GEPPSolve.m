@@ -1,4 +1,4 @@
-function [Solutions, ResiduumNorm] = GEPPSolve(A,b)
+function [Solutions, ResiduumNorm, resCorrected] = GEPPSolve(A,b)
 
 %check whether the matrix is square, and vector is of proper dimension
 
@@ -108,5 +108,21 @@ end
 
 %outputting normalized residuum
 ResiduumNorm = sqrt(norm);
+
+
+%residuum correction
+deltaX = residuum' * inv(A);
+deltaX = deltaX';
+x2 = solutionsVector - deltaX;
+res2 = A * x2 - b;
+
+%calculating the Euclidan norm of corrected residuum
+norm2 = 0;
+for count = 1 : size(res2)
+    norm2 = norm2 + (res2(count) * res2(count));
+end
+
+resCorrected = sqrt(norm2);
+
 
 end

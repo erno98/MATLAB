@@ -17,15 +17,6 @@ function matrix = generate_matrix(N, x)
             matrix(j, i) = matrix(i, j);
        end
     end
-    
- 
-    
 
-    
-    
-    
-
-    
-    
 end
 

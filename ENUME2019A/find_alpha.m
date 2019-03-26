@@ -1,5 +1,7 @@
 function [alpha, alpha_set, det_set, cond_set] = find_alpha(N, precision, step)
 
+% TODO: zrobić alfę f0, przyrównać x do 0 i naprawić ten badziew
+
     % initial values
     alpha = 0;
     x = sqrt(alpha^2 + 1/2) - 1;

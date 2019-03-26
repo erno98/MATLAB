@@ -13,8 +13,7 @@ function [alpha, alpha_set, det_set, cond_set] = find_alpha(N, precision, step)
         A = generate_matrix(N, x);
         i = i+1;
     end
-    
-    
+        
     % outputting alpha, det(A) and cond(A) values for plotting
     i=1;
     a = alpha-0.01;
@@ -27,7 +26,5 @@ function [alpha, alpha_set, det_set, cond_set] = find_alpha(N, precision, step)
         i = i+1;
         a = a + step;
     end
-    
 
 end
-

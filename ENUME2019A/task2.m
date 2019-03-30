@@ -1,50 +1,62 @@
-% setting up initial parameters
-precision = 10e-7;
-step = 10e-7;
-[alpha_1, alpha_set_1, det_set_1, cond_set_1] = find_alpha(3, precision, step);
-[alpha_10, alpha_set_10, det_set_10, cond_set_10] = find_alpha(10, precision, step);
-[alpha_20, alpha_set_20, det_set_20, cond_set_20] = find_alpha(20, precision, step);
+close all
+clear all
 
-% -------------------------------------------
+% for determinant = 0, x has to be 0, thus:
+fun = @f;
+% alpha has to be positive, starting from 0
+alpha = abs(fzero(fun, 0));
+x = sqrt(alpha^2 +1/2) -1;
 
-figure('Name', 'Det(A) on alpha')
-subplot(1,3,1);
-plot(alpha_set_1, det_set_1)
-title('N = 3');
-xlabel('alpha')
-ylabel('det(A)')
+% matrix generation
+A1 = generate_matrix(3, x);
+A2 = generate_matrix(10, x);
+A3 = generate_matrix(20, x);
 
-subplot(1,3,2);
-plot(alpha_set_10, det_set_10)
-title('N = 10');
-xlabel('alpha')
-ylabel('det(A)')
+% dependances
+num = 700;
+alphas = linspace(alpha - 0.01, alpha + 0.01, num);
+dets3 = zeros(num, 1);
+conds3 = zeros(num, 1);
 
-subplot(1,3,3);
-plot(alpha_set_20, det_set_20)
-title('N = 20');
-xlabel('alpha')
-ylabel('det(A)')
+dets10 = zeros(num, 1);
+conds10 = zeros(num, 1);
 
-% -------------------------------------------
-
-figure('Name', 'cond(A) on alpha') 
-subplot(1,3,1);
-plot(alpha_set_1, cond_set_1)
-title('N = 3');
-xlabel('alpha')
-ylabel('cond(A)')
-
-subplot(1,3,2);
-plot(alpha_set_10, cond_set_10)
-title('N = 10');
-xlabel('alpha')
-ylabel('cond(A)')
-
-subplot(1,3,3);
-plot(alpha_set_20, cond_set_20)
-title('N = 20');
-xlabel('alpha')
-ylabel('cond(A)')
+dets20 = zeros(num, 1);
+conds20 = zeros(num, 1);
 
 
+
+for i = 1:num
+    A3 = generate_matrix(3, sqrt(alphas(i)^2 +1/2) -1);
+    A10 = generate_matrix(10, sqrt(alphas(i)^2 +1/2) -1);
+    A20 = generate_matrix(20, sqrt(alphas(i)^2 +1/2) -1);
+    
+    dets3(i) =  det(A3);
+    conds3(i) = cond(A3);
+    
+    dets10(i) =  det(A10);
+    conds10(i) = cond(A10);
+    
+    dets20(i) =  det(A20);
+    conds20(i) = cond(A20);
+end
+
+% det(A) on alpha
+figure(1)
+semilogy(alphas, dets3, alphas, dets10, alphas, dets20)
+legend("N = 3", "N = 10", "N = 20")
+title("det(A) on alpha")
+xlabel("alpha")
+ylabel("det(A)")
+
+% cond(A) on alpha
+figure(2)
+semilogy(alphas, conds3, alphas, conds10, alphas, conds20)
+legend("N = 3", "N = 10", "N = 20")
+title("cond(A) on alpha")
+xlabel("alpha")
+ylabel("cond(A)")
+
+function x = f(alpha)
+    x = sqrt(alpha^2 + 1/2) - 1;
+end

@@ -19,6 +19,7 @@ function inverted = invertLU(A)
         end
         
         inverted(s,k) = X(s,k)./U(s,s);
+        
         for m=s-1:-1:1
             inverted(m,k) = (X(m,k)-U(m,m+1:s)*inverted(m+1:s,k))./U(m,m);
         end

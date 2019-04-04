@@ -61,7 +61,7 @@ loglog(xs, RMSE3(1, :), 'r', xs, RMSE3(2, :), '--r')
 hold on
 loglog(xs, RMSE10(1, :), 'b', xs, RMSE10(2, :), '--b')
 loglog(xs, RMSE20(1, :), 'm', xs, RMSE20(2, :), '--m')
-
+loglog(xs, norm10_inf(1, :), 'k', xs, norm10_inf(2, :), '--k')
 title('RMSE on x')
 xlabel('x')
 ylabel('RMSE')
@@ -73,12 +73,12 @@ figure(2)
 loglog(xs, ME3(1, :), 'r', xs, ME3(2, :), '--r')
 hold on
 loglog(xs, ME10(1, :),'b',  xs, ME10(2, :), '--b')
-loglog(xs, norm10_e(1, :), 'k', xs, norm10_e(2, :), '--k')
 loglog(xs, ME20(1, :), 'm', xs, ME20(2, :), '--m')
+loglog(xs, (norm3_e(1, :) + norm10_e(1, :) + norm20_e(1, :))/3, 'k', xs, norm10_e(2, :), '--k')
 title('ME on x')
 xlabel('x')
 ylabel('ME')
-legend('LU N=3', 'LLT N=3', 'LU N=10', 'LLT N=10', 'LU N=20', 'LLT N=20', 'Location', 'northwest')
+legend('LU N=3', 'LLT N=3', 'LU N=10', 'LLT N=10', 'LU N=20', 'LLT N=20','avg norm LU', 'norm LLT', 'Location', 'northwest')
 hold off
 
 % comparison with norm

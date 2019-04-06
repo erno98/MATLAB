@@ -3,16 +3,7 @@ function inverted = invertLU(A)
     s = size(A);
     s = s(1);
     
-% LU factorization
-    U = A;
-    L = eye(s);
-    for c=1:(s-1)
-         for r=(c+1):s
-             L(r,c)=U(r,c)/U(c,c);
-             U(r,:)=U(r,:)-L(r,c)*U(c,:);
-         end
-     end
-
+    [L, U, P] = lu(A);
    
     % creating identity matrix
     I = eye(s);
@@ -34,14 +25,7 @@ function inverted = invertLU(A)
         end
     end
    
-
-% I=eye(size(A));
-% s=size(A,1);
-% inverted=zeros(size(A));
-% for i=1:s
-%     b=I(:,i);
-%     inverted(:,i)=TriangleBackwardSub(U,TriangleForwardSub(L,P*b));
-% end
+    inverted = inverted*P;
 
     
 end

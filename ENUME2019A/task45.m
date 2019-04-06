@@ -118,7 +118,8 @@ norms = [norm_euc_diff_3_LU, norm_euc_diff_10_LU, norm_euc_diff_20_LU; ...
 figure(3)
 bar(c, norms)
 hold on
-ylabel("|matlab's norm-norm|")
+title("Average difference between matlab's norms and created ones")
+ylabel("norm difference")
 xlabel('norm-decomposition')
 legend('N=3', 'N=10', 'N=20', 'Location', 'northwest')
 grid on

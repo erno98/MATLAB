@@ -7,9 +7,9 @@ s10 = indicate(10);
 s20 = indicate(20);
 s30 = indicate(30);
 
-function y = f(x)
-    y = (x+1/3)^2 + exp(-x-2);
-end
+
+y = @(x) (x+1/3)^2 + exp(-x-2);
+
 
 function sequence = indicate(N)
     sequence = zeros(1, N);

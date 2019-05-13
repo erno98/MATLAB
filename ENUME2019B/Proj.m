@@ -100,11 +100,11 @@ for i = 1:pts
     ys(i)=fun;
 end
 RMSEc(n,k) = norm(ys-y) / norm(y);
-MEc(n,k) = norm(ys-y, Inf) / norm(y, Inf);
+
     end
 end
 RMSEm(1,s) = min(RMSEc(RMSEc>0));
-MEm(1,s) = min(MEc(MEc>0));
+
 end
 
 

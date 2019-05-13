@@ -75,7 +75,7 @@ MEm = zeros(1, spc);
 pts = 30;
     
 for s =1:spc  
-for N = 5:50
+for N = 10:50
     for K = 4:N-1
         xns = generate_xn(N);
         yns = f(xns);

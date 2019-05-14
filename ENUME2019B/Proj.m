@@ -4,9 +4,9 @@ close all
 % Tasks 1 and 2 - approximation of function
 
 % initial setup
-step=100;
-approx = zeros(1,step);
-x = linspace(-1,1,step);
+nodes_num=100;
+approx = zeros(1,nodes_num);
+x = linspace(-1,1,nodes_num);
 
 i = 1;
 for N=10:10:30
@@ -51,6 +51,8 @@ for k=4:50
         me(n-4,k-3)= ME(n,k);
     end
 end
+
+
 figure(10)
 surf(K, N, rms);
 xlabel("K")
@@ -62,79 +64,130 @@ xlabel("K")
 ylabel("N")
 zlabel("ME")
 
-
 % Task 4 - systematic investigation of the dependence of norms on the
 % standard deviation of random errors
-spc = 10;
-o = logspace(-5, -1, spc);
-polyo = logspace(-5, -1);
-RMSEc = zeros(50,49);
-MEc = zeros(50,49);
-RMSEm = zeros(1,spc);
-MEm = zeros(1, spc);
-pts = 30;
-    
-for s =1:spc  
-for N = 10:50
-    for K = 4:N-1
-        xns = generate_xn(N);
-        yns = f(xns);
-        xks = generate_xn(K);
-        errand = randn(1,N) * o(s);
-        yc = yns + errand;
-        FI = zeros(N, K);
-for n = 1:N
-    for k = 1:K
-        FI(n,k)=Bsk(xns(n), k, K);
+
+% initial setup
+N_const = 20;
+nodes_num = 10;
+
+n_min_rms = zeros(1,nodes_num);
+k_min_rms = zeros(1,nodes_num);
+
+n_min_me = zeros(1, nodes_num);
+k_min_me = zeros(1, nodes_num);
+
+[N,K] = meshgrid(1:N_const,1:N_const);
+space = logspace(-5,-1,nodes_num);
+
+roms = nan(N_const);
+roms_min = ones(1, nodes_num);
+mes = nan(N_const);
+mes_min = ones(1, nodes_num);
+
+% performing the investigation
+for i=1:nodes_num
+    for n=5:N_const
+        for k=5:N_const
+            if(k<n)
+                % computing errors on corrupted data
+                roms(n-4, k-4) = RMS_corrupt(n, k, space(i));
+                mes(n-4, k-4) = ME_corrupt(n, k, space(i));
+                % selecting pairs
+                if(roms(n-4,k-4)<roms_min(i))   % RMS
+                    roms_min(i)=roms(n-4,k-4);
+                    n_min_rms(i)=n;
+                    k_min_rms(i)=k;
+                end
+                if(mes(n-4,k-4)<mes_min(i))     % ME
+                    mes_min(i)=mes(n-4,k-4);
+                    n_min_me(i)=n;
+                    k_min_me(i)=k;
+                end
+                
+            else
+                continue;
+            end
+        end
     end
 end
-p = FI.' * FI \ FI.' * yc';
-p = p.';
-ys = zeros(1,pts);
 
-for i = 1:pts
-    fun = 0;
-    for j = 1:K
-        fun = fun + p(j)*Bsk(x(i), j, K);
-    end
-    ys(i)=fun;
-end
-RMSEc(n,k) = norm(ys-y) / norm(y);
+% fitting the data
+p_rms = polyfit(space, roms_min, 3);    % RMS
+RMSE_map = polyval(p_rms, space);
 
-    end
-end
-RMSEm(1,s) = min(RMSEc(RMSEc>0));
+p_me = polyfit(space, mes_min, 3);      % ME
+ME_map = polyval(p_me, space);
 
-end
-
-
-p = polyfit(o, RMSEm, 3);
-RMSEmapp = polyval(p, polyo);
-figure
-loglog(o, RMSEm, "ko");
+% plotting
+figure % RMS
+loglog(space, roms_min, "ko");
 hold on
-loglog(polyo, RMSEmapp, 'm');
+loglog(space, RMSE_map,'m');
+legend("RMS nodes", "approximation")
 hold off
-des = strcat("RMS on sigma random");
-title(des)
-legend("RMS nodes", "approximation");
 
-figure
-p = polyfit(o, MEm, 3);
-MEmapp = polyval(p, polyo);
-loglog(o, MEm, "ko");
+figure % ME
+loglog(space, mes_min, "ko");
 hold on
-loglog(polyo, MEmapp, 'm');
+loglog(space, ME_map,'m');
+legend("ME nodes", "approximation")
 hold off
-des = strcat("ME on sigma random");
-title(des)
-legend("ME nodes", "approximation");
 
 
 
 % ----------- FUNCTION DEFINITIONS -------------
 
-% Root-mean-square error
+
+% approximation of corrupted data
+function y = approx_corrupt(x, N, K, sigma)
+    phi = generate_phi(N,K);
+    x_n = generate_xn(N);
+    y = generate_y_corrupted(x_n,sigma);
+    p = phi.' * phi\phi.' * y.';
+    y = 0;
+    K = length(p);
+    for i=1:K
+        y = y + p(i) * Bsk(x,i,K);
+    end
+end
+
+% root mean square error of corrupted data
+function y = RMS_corrupt(N,K,sigma)
+    nom = zeros(1,N);
+    denom = zeros(1,N);
+    x_n=generate_xn(N);
+    for i=1:N
+        nom(1, i) = approx_corrupt(x_n(i), N, K, sigma) - f(x_n(i));
+        denom(1, i) = f(x_n(i));
+    end
+    y= norm(nom) / norm(denom);
+end
+
+% maximum error of corrupted data
+function y = ME_corrupt(N,K,sigma)
+    nom = zeros(1,N);
+    denom = zeros(1,N);
+    x_n = generate_xn(N);
+    for i=1:N
+        nom(1, i) = approx_corrupt(x_n(i), N, K, sigma) - f(x_n(i));
+        denom(1,i) = f(x_n(i));
+    end
+    y= norm(nom,Inf) / norm(denom, Inf);
+end
+
+% generation of corrupted y 
+function y=generate_y_corrupted(x, sigma)
+    N = length(x);
+    yn = zeros(1,N);
+     for n=1:N
+       x_n = -1+ 2*(n-1) / (N-1);
+       yn(n) = f(x_n) + randn()*sigma^2;
+     end
+    y=yn;
+end
+
+% Root-mean-square error (2 norm)
 function y = RMS(N, K)
     nom = zeros(1, N);
     denom = zeros(1, N);
@@ -148,7 +201,7 @@ function y = RMS(N, K)
     y=norm(nom) / norm(denom);
 end
 
-% Maximum error
+% Maximum error (infinity norm)
 function y = ME(N, K)
     nom = zeros(1, N);
     denom = zeros(1, N);
@@ -162,6 +215,7 @@ function y = ME(N, K)
     y= norm(nom, Inf) / norm(denom, Inf);
 end
 
+% generation of phi for approximation
 function y = generate_phi(N,K)
     phi = zeros(N,K);
     for n=1:N
@@ -173,9 +227,10 @@ function y = generate_phi(N,K)
     y = phi;
 end
 
+% generate y coordinates of the function
 function y = generate_y(x)
     N = length(x);
-    yn = zeros(1,N);
+    yn = zeros(1, N);
      for n=1:N
        x_n = -1+2*(n-1)/(N-1);
        yn(n) = f(x_n);
@@ -183,29 +238,31 @@ function y = generate_y(x)
     y = yn;
 end
 
+% generate x coordinates of the function
 function y = generate_xn(N)
-    x_n=zeros(1,N);
+    x_n = zeros(1,N);
     for n=1:N
-       x_n(n)=-1+2*(n-1)/(N-1);
+       x_n(n) = -1 + 2*(n-1) / (N-1);
     end
     y=x_n;
 end
 
-function y = Bsk(x,k,K)
-    xk = -1+2*((k-1)/(K-1));
-    y = Bs(2*(x-xk)+2);
+% calculating xk points in given B-splines
+function y = Bsk(x, k, K)
+    xk = -1 + 2*((k-1) / (K-1));
+    y = Bs(2 * (x - xk) + 2);
 end
 
 % approximating function
-function y = approximate(x,N,K)
-    Fi = generate_phi(N,K);
+function y = approximate(x, N, K)
+    Fi = generate_phi(N, K);
     x_n = generate_xn(N);
     y = generate_y(x_n);
     p = Fi.' * Fi \ Fi.' * y.';
     y=0;
     K=length(p);
     for i=1:K
-        y=y+p(i)*Bsk(x,i,K);
+        y=y + p(i) * Bsk(x, i, K);
     end
 end
 
